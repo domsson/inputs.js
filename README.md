@@ -1,7 +1,8 @@
 # inputs.js
 
-A small utility class that helps to hook up any given script to some 
-HTML input elements and keep them in synch via callback functions.
+A small utility class designed to help you hook up HTML input elements 
+to any given script via callback functions. Basically a little convenience
+layer around `addEventListener()`.
 
 ## Status
 
