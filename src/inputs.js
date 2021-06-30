@@ -8,7 +8,9 @@ class Inputs
 			"name": null,
 			"event": "change", // default event type
 			"callback": null,  // default callback function
-			"context": null    // user context object
+			"context": null,   // user context object
+			"sub": null,       // linked object
+			"filter": null     // default filter function 
 		};
 
 		// merge user configuration
@@ -19,6 +21,9 @@ class Inputs
 
 		// input specific callbacks
 		this.callbacks = {};
+
+		// input specific filters
+		this.filters = {};
 	}
 
 	get attr()
@@ -49,6 +54,26 @@ class Inputs
 	set callback(cb)
 	{
 		this.config.callback = cb;
+	}
+
+	get sub()
+	{
+		return this.config.sub;
+	}
+
+	set sub(s)
+	{
+		this.config.sub = s;
+	}
+
+	get filter()
+	{
+		return this.config.filter;
+	}
+
+	set filter(f)
+	{
+		this.config.filter = f;
 	}
 
 	/*
@@ -99,16 +124,12 @@ class Inputs
 	}
 
 	/*
-	 * Handle events by dispatching relevant info to the user callback.
+	 * Handle events.
 	 */
 	on_event(evt)
 	{
 		let input = evt.currentTarget;
 		let id = this.get_input_id(input);
-
-		let cb = this.callbacks[id] || this.config.callback;
-		if (!cb) return;
-
 		let details = {
 			"event": evt,
 			"input": input,
@@ -119,14 +140,38 @@ class Inputs
 			"context": this.config.context
 		};
 
+		this.feed(details);
+		this.call(details);
+	}
+
+	/*
+	 * Inform the relevant callback about an event.
+	 */
+	call(details)
+	{
+		let cb = this.callbacks[details.id] || this.config.callback;
+		if (!cb) return;
 		cb(details);
 	}
 
 	/*
-	 * Forces an invocation of all callback functions.
+	 * Set a property on the subcriber according to the event.
+	 */
+	feed(details)
+	{
+		if (!this.sub) return;
+		if (!this.sub.hasOwnProperty(details.id)) return;
+
+		let filter = this.filters[details.id] || this.config.filter;
+		this.sub[details.id] = filter ? filter(details) : details.value; 
+	}
+
+	/*
+	 * Dispatch a fake/dummy event.
 	 */
 	dispatch()
 	{
+		// dummy event
 		let details = {
 			"event": null,
 			"input": null,
@@ -137,8 +182,22 @@ class Inputs
 			"context": this.config.context
 		};
 
+		// feed the subscriber
+		if (this.config.sub)
+		{
+			for (let id in this.inputs)
+			{
+				details.id = id;
+				details.input = this.inputs[id];
+				details.value = this.get_input_value(details.input);
+				let filter = this.filters[details.id] || this.config.filter;
+				if (filter) details.value = filter(details);
+				this.feed(details);
+			}
+		}
+
 		// dispatch the general callback
-		this.config.callback(details);
+		if (this.config.callback) this.config.callback(details);
 
 		// dispatch input-element specific callbacks
 		for (let id in this.callbacks)
@@ -249,6 +308,18 @@ class Inputs
 	del_callback(id)
 	{
 		delete this.callbacks[id];
+	}
+
+	reg_filter(id, f)
+	{
+		let input = this.inputs[id];
+		if (!input) return;
+		this.filters[id] = f;
+	}
+
+	del_filter(id)
+	{
+		delete this.filters[id];
 	}
 
 	enable_all()
