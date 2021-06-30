@@ -17,4 +17,8 @@ layer around `addEventListener()`.
 - Optionally set the `data-inputs-id` attribute to give inputs custom identifiers (otherwise defaults to the `id`)
 - Optionally set the `data-inputs-event` attribute to listen to an event other than `change`
 
+## How to use
+
+Sorry, I'll fill this space with some proper documentation soon.
+For now, just check out the `index.html` for some pointers.
 
