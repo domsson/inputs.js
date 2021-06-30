@@ -130,18 +130,40 @@ class Inputs
 	{
 		let input = evt.currentTarget;
 		let id = this.get_input_id(input);
+		let val = this.get_input_value(input);
 		let details = {
 			"event": evt,
 			"input": input,
 			"set": this.get_input_attr(input),
 			"id": id,
-			"value": this.get_input_value(input),
+			"value": val,
+			"filtered": val,
 			"instance": this,
 			"context": this.config.context
 		};
 
+		this.trim(details);
 		this.feed(details);
 		this.call(details);
+	}
+
+	/*
+	 * Set the 'filtered' value by runnung it through the appropriate filter, if any.
+	 */
+	trim(details)
+	{
+		let filter = this.filters[details.id] || this.config.filter;
+		details.filtered = filter ? filter(details.value) : details.value;
+	}
+
+	/*
+	 * Set a property on the subcriber according to the event.
+	 */
+	feed(details)
+	{
+		if (!this.sub) return;
+		if (!this.sub.hasOwnProperty(details.id)) return;
+		this.sub[details.id] = details.filtered;
 	}
 
 	/*
@@ -155,21 +177,9 @@ class Inputs
 	}
 
 	/*
-	 * Set a property on the subcriber according to the event.
+	 * Fire a dummy event for all inputs.
 	 */
-	feed(details)
-	{
-		if (!this.sub) return;
-		if (!this.sub.hasOwnProperty(details.id)) return;
-
-		let filter = this.filters[details.id] || this.config.filter;
-		this.sub[details.id] = filter ? filter(details) : details.value; 
-	}
-
-	/*
-	 * Dispatch a fake/dummy event.
-	 */
-	dispatch()
+	fire()
 	{
 		// dummy event
 		let details = {
@@ -178,34 +188,20 @@ class Inputs
 			"set": this.name,
 			"id": null,
 			"value": null,
+			"filtered": null,
 			"instance": this,
 			"context": this.config.context
 		};
-
-		// feed the subscriber
-		if (this.config.sub)
-		{
-			for (let id in this.inputs)
-			{
-				details.id = id;
-				details.input = this.inputs[id];
-				details.value = this.get_input_value(details.input);
-				let filter = this.filters[details.id] || this.config.filter;
-				if (filter) details.value = filter(details);
-				this.feed(details);
-			}
-		}
-
-		// dispatch the general callback
-		if (this.config.callback) this.config.callback(details);
-
-		// dispatch input-element specific callbacks
-		for (let id in this.callbacks)
+		 
+		for (let id in this.inputs)
 		{
 			details.id = id;
 			details.input = this.inputs[id];
 			details.value = this.get_input_value(details.input);
-			this.callbacks[id](details);
+	
+			this.trim(details);
+			this.feed(details);
+			this.call(details);
 		}
 	}
 

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>inputs.js</title>
+		<!-- <link rel="stylesheet" href="css/inputs.css"> -->
+		<style>
+			:root {
+				--font: "sans-serif";
+				--size: 12pt;
+				--fg: #333333;
+				--bg: #f13745;
+			}
+			main {
+				font-family: var(--font);
+				font-size: var(--size);
+				color: var(--fg);
+				background-color: var(--bg);
+			}
+		</style>
+		<script src="src/inputs.js"></script>
+		<script>
+			function cb(details)
+			{
+				let { id, filtered } = details;
+				let root = document.querySelector(":root");
+				root.style.setProperty("--" + id, filtered);
+			}
+
+			function filter_size(value)
+			{
+				return value + "pt";
+			}
+
+			window.addEventListener("load", (event) => {
+				let inputs = new Inputs({ "callback": cb });
+				inputs.init();
+				inputs.reg_filter("size", filter_size);
+				inputs.fire();
+			});
+		</script>
+	</head>
+	<body>
+		<form>
+			<div class="field">
+				<label for="font">Font</label>
+				<select id="font" data-inputs="">
+					<option value="serif">Serif</option>
+					<option value="sans-serif">Sans Serif</option>
+					<option value="monospace" selected>Monospace</option>
+				</select>
+			</div>
+			<div class="field">
+				<label for="size">Font size</label>
+				<input type="number" id="size" value="20" data-inputs="">
+			</div>
+			<div class="field">
+				<label for="fg">FG color</label>
+				<input type="color" id="fg" value="#ffffff" data-inputs="">
+			</div>
+			<div class="field">
+				<label for="bg">BG color</label>
+				<input type="color" id="bg" value="#000000" data-inputs="">
+			</div>
+		</form>
+		<main>
+			<p>Hello inputs!</p>
+		</main>
+	</body>
+</html>
