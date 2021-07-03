@@ -148,7 +148,7 @@ class Inputs
 	}
 
 	/*
-	 * Set the 'filtered' value by runnung it through the appropriate filter, if any.
+	 * Set the 'filtered' value.
 	 */
 	trim(details)
 	{
