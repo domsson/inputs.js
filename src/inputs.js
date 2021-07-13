@@ -166,6 +166,26 @@ class Inputs
 		this.sub[details.id] = details.filtered;
 	}
 
+	feed_all(raw=false)
+	{
+		if (!this.sub) return;
+		for (let id in this.inputs)
+		{
+			if (!this.sub.hasOwnProperty(id)) continue;
+			this.sub[id] = this.get(id, raw); 
+		}
+	}
+
+	grab_all()
+	{
+		if (!this.sub) return;
+		for (let id in this.inputs)
+		{
+			if (!this.sub.hasOwnProperty(id)) continue;
+			this.set(this.sub[id]); 
+		}
+	}
+
 	/*
 	 * Inform the relevant callback about an event.
 	 */
@@ -255,13 +275,13 @@ class Inputs
 		return isNaN(val) ? val : (int ? parseInt(val) : parseFloat(val));
 	}
 
-	get_all(no_custom_cb=false)
+	get_all(no_custom_cb=false, raw=false)
 	{
 		let vals = {};
 		for (let id in this.inputs)
 		{
 			if (no_custom_cb && this.callbacks[id]) continue;
-			vals[id] = this.get(id);
+			vals[id] = this.get(id, raw);
 		}
 		return vals;
 	}
@@ -269,10 +289,10 @@ class Inputs
 	/*
 	 * Get the current value from the input element.
 	 */
-	get(id)
+	get(id, raw=false)
 	{
 		let input = this.inputs[id];
-		return this.get_input_value(input);
+		return raw ? input.value : this.get_input_value(input);
 	}
 
 	set_all(vals, no_custom_cb=false)
